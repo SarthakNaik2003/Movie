@@ -1,99 +1,108 @@
-import React, { useState, useEffect } from 'react'
+
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
-import '../App.css'
-import { Link, useNavigate } from "react-router-dom";
-import apiService from "../service/api/movieapi"
+import '../App.css';
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import apiService from "../service/api/movieapi";
 import NavDropdown from 'react-bootstrap/NavDropdown';
 
 function MovieCard() {
-
-    const [movies, setMovies] = useState([])
+    const [movies, setMovies] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentpage] = useState(1);
-    const [recordsPerPage, setRecordPerPage] = useState(10)
+    const [filteredMovies, setFilteredMovies] = useState([]);
+    const [recordsPerPage, setRecordsPerPage] = useState(10);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const currentPage = parseInt(searchParams.get('page') || '1', 10);
+
     const lastIndex = currentPage * recordsPerPage;
     const firstIndex = lastIndex - recordsPerPage;
-    const records = movies.slice(firstIndex, lastIndex)
-    const nPage = Math.ceil(movies.length / recordsPerPage)
-    const numbers = [...Array(nPage + 1).keys()].slice(1)
-
-
-    const filteredMovies = movies.filter(movie =>
-        movie.movie.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    useEffect(() => {
-        setMovies(filteredMovies)
-    }, [searchQuery])
-
-    // useEffect(() => {
-    //     setMovies(records)
-    // }, [currentPage])
-
-
+    const records = filteredMovies.slice(firstIndex, lastIndex);
+    const nPage = Math.ceil(filteredMovies.length / recordsPerPage);
+    const pageNumbers = [...Array(nPage + 1).keys()].slice(1);
 
     useEffect(() => {
         fetchData();
     }, []);
 
+    useEffect(() => {
+        setFilteredMovies(movies);
+    }, [movies]);
+
+    useEffect(() => {
+        setSearchParams({ page: currentPage });
+    }, [currentPage, setSearchParams]);
+
     const fetchData = async () => {
         try {
             const response = await apiService.getAll();
             const data = response;
-            console.log(data)
+            console.log(data);
             setMovies(data);
         } catch (error) {
-            console.error("Error fetching organizations:", error);
+            console.error("Error fetching movies:", error);
         }
     };
 
-
-
-
-    const history = useNavigate()
+    const navigate = useNavigate();
 
     const handleClick = () => {
-        history('/playlist'); // Redirects to the '/playlist' route
+        navigate('/playlist'); // Redirects to the '/playlist' route
     };
 
-    function prePage() {
-        if (currentPage !== firstIndex) {
-            setCurrentpage(currentPage - 1)
+    const prePage = () => {
+        if (currentPage > 1) {
+            setSearchParams({ page: currentPage - 1 });
         }
-    }
+    };
 
-    function changeCPage(id) {
-        setCurrentpage(id)
-    }
+    const changeCPage = (id) => {
+        setSearchParams({ page: id });
+    };
 
-    function nextPage() {
-        if (currentPage !== lastIndex) {
-            setCurrentpage(currentPage + 1)
+    const nextPage = () => {
+        if (currentPage < nPage) {
+            setSearchParams({ page: currentPage + 1 });
         }
-    }
-    function handleSelect(eventKey) {
-        setRecordPerPage(Number(eventKey))
-    }
+    };
+
+    const handleSelect = (eventKey) => {
+        setRecordsPerPage(Number(eventKey));
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+        setFilteredMovies(
+            movies.filter(movie =>
+                movie.movie.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+        );
+        setSearchParams({ page: 1 }); // Reset to first page after search
+    };
 
     return (
         <>
-            <input type="text" placeholder='search here' value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            <input
+                type="text"
+                placeholder='Search here'
+                value={searchQuery}
+                onChange={handleSearchChange}
+                name='searchQuery'
+            />
+            {/* <button onClick={handleSearchClick}>Search</button> */}
             <NavDropdown onSelect={handleSelect} title={`No of Page: ${recordsPerPage}`} id="navbarScrollingDropdown">
-                <NavDropdown.Item eventKey='5' href="#action3">5</NavDropdown.Item>
-                <NavDropdown.Item eventKey='10' href="#action3">10</NavDropdown.Item>
-                <NavDropdown.Item eventKey='20' href="#action3">20</NavDropdown.Item>
-
+                <NavDropdown.Item eventKey='5' >5</NavDropdown.Item>
+                <NavDropdown.Item eventKey='10' >10</NavDropdown.Item>
+                <NavDropdown.Item eventKey='20' >20</NavDropdown.Item>
             </NavDropdown>
             <div className='card-body'>
-
-
                 {
                     records.map((movie, index) => (
                         <Card className='d-flex flex-column align-items-center' key={index} style={{ width: '15rem' }}>
                             <Card.Body className='d-flex flex-column align-items-center'>
                                 <Link state={movie} to={`/movies/${movie.id}/${movie.movie.toLowerCase().replace(/\s+/g, '-')}`} rel="noopener noreferrer">
-                                    <video className='card-img' src={movie.image} alt="Clickable Image" />
+                                    <video className='card-img' src={movie.image} alt="Movie video" />
                                 </Link>
                                 <Card.Title className='text-center'>{movie.movie}</Card.Title>
                                 <div className='d-flex justify-content-center align-items-center w-100 mt-2'>
@@ -103,30 +112,26 @@ function MovieCard() {
                         </Card>
                     ))
                 }
-
             </div>
             <nav className='pagi-body row justify-content-center align-items-center '>
                 <ul className='pagination'>
                     <li className='page-item'>
-                        <a href="#" className='page-link' onClick={prePage}>Prev</a>
+                        <Link className='page-link' to={`?page=${currentPage - 1}`} onClick={(e) => { e.preventDefault(); prePage(); }}>Prev</Link>
                     </li>
                     {
-                        numbers.map((n, i) => (
+                        pageNumbers.map((n, i) => (
                             <li key={i} className={`page-item ${currentPage === n ? 'active' : ''}`}>
-                                <a className='page-link' href="#" onClick={() => changeCPage(n)}>{n}</a>
+                                <Link className='page-link' to={`?page=${n}`} onClick={(e) => { e.preventDefault(); changeCPage(n); }}>{n}</Link>
                             </li>
                         ))
                     }
                     <li className='page-item'>
-                        <a href="#" className='page-link' onClick={nextPage}>Next</a>
+                        <Link className='page-link' to={`?page=${currentPage + 1}`} onClick={(e) => { e.preventDefault(); nextPage(); }}>Next</Link>
                     </li>
-
                 </ul>
-            </nav >
+            </nav>
         </>
-
-
-    )
+    );
 }
 
-export default MovieCard
+export default MovieCard;
