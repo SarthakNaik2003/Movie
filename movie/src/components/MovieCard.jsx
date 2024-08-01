@@ -1,11 +1,18 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import '../App.css';
+import SweetAlert from 'react-bootstrap-sweetalert';
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import apiService from "../service/api/movieapi";
 import NavDropdown from 'react-bootstrap/NavDropdown';
+import { debounce } from "lodash"
+import { useDispatch } from 'react-redux';
+import { addToPlayList } from '../reduxContainer/MovieReducer';
+
+
+
 
 function MovieCard() {
     const [movies, setMovies] = useState([]);
@@ -13,6 +20,7 @@ function MovieCard() {
     const [filteredMovies, setFilteredMovies] = useState([]);
     const [recordsPerPage, setRecordsPerPage] = useState(10);
     const [searchParams, setSearchParams] = useSearchParams();
+
 
     const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
@@ -45,11 +53,13 @@ function MovieCard() {
         }
     };
 
+    const dispatch = useDispatch()
+
+
+
     const navigate = useNavigate();
 
-    const handleClick = () => {
-        navigate('/playlist'); // Redirects to the '/playlist' route
-    };
+
 
     const prePage = () => {
         if (currentPage > 1) {
@@ -71,14 +81,45 @@ function MovieCard() {
         setRecordsPerPage(Number(eventKey));
     };
 
+
+    const debouncedSearch = useCallback(
+        debounce((term) => {
+            console.log('Searching for:', term);
+            setFilteredMovies(
+                movies.filter(movie =>
+                    movie.movie.toLowerCase().includes(term.toLowerCase())
+                )
+            );
+            // Perform the search or API call here
+
+        }, 500), // 300ms delay
+        []
+    );
+
+    const [showAlert, setShowAlert] = useState(false);
+
+    const handleAddPlaylist = (movie) => {
+        setShowAlert(true);
+        dispatch(addToPlayList(movie)),
+            setTimeout(() => {
+                setShowAlert(false);
+            }, 2000);
+    };
+
+
+
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
-        setFilteredMovies(
-            movies.filter(movie =>
-                movie.movie.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-        );
+        if (e.target.value === "") {
+            setFilteredMovies(movies)
+        } else {
+
+            debouncedSearch(e.target.value);
+
+
+        }
         setSearchParams({ page: 1 }); // Reset to first page after search
+
     };
 
     return (
@@ -106,7 +147,7 @@ function MovieCard() {
                                 </Link>
                                 <Card.Title className='text-center'>{movie.movie}</Card.Title>
                                 <div className='d-flex justify-content-center align-items-center w-100 mt-2'>
-                                    <Button onClick={handleClick} variant="primary">Add to Playlist</Button>
+                                    <Button onClick={() => { handleAddPlaylist(movie) }} variant="primary">Add to Playlist</Button>
                                 </div>
                             </Card.Body>
                         </Card>
@@ -130,6 +171,17 @@ function MovieCard() {
                     </li>
                 </ul>
             </nav>
+
+            {/* sweet alert for add to playlist  */}
+            <div>
+                {showAlert && (
+                    <SweetAlert
+                        success
+                        title="Playlist added successfully!"
+                        onConfirm={() => setShowAlert(false)}
+                    />
+                )}
+            </div>
         </>
     );
 }

@@ -13,11 +13,10 @@ function Movie() {
     if (!movieData) {
         return <div>Loading...</div>;
     }
-
+    
     return (
         <div>
             {
-                // movieData.map((movieItem, index) => (
                 <Card style={{ width: '15rem' }}>
                     <Card.Body>
                         <Link to={movieData.imdb_url} target="_blank" rel="noopener noreferrer">
@@ -32,7 +31,6 @@ function Movie() {
                         </div>
                     </Card.Body>
                 </Card>
-                // ))
             }
         </div>
     );

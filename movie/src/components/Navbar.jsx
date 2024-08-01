@@ -3,16 +3,11 @@ import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const NavbarMain = () => {
 
-    const navigate = useNavigate();
 
-    const handleRefresh = () => {
-        navigate('/');
-        window.location.reload();
-    };
 
     return (
         <Navbar expand="lg" className="bg-warning">
@@ -25,7 +20,7 @@ const NavbarMain = () => {
                         style={{ maxHeight: '100px' }}
                         navbarScroll
                     >
-                        <NavLink className="nav-link " to="/" onClick={handleRefresh}>Home</NavLink>
+                        <NavLink className="nav-link " to="/" >Home</NavLink>
                         <NavLink className="nav-link" to="/playlist">Playlist</NavLink>
 
 
