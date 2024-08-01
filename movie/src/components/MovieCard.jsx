@@ -8,8 +8,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import apiService from "../service/api/movieapi";
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { debounce } from "lodash"
-import { useDispatch } from 'react-redux';
-import { addToPlayList } from '../reduxContainer/MovieReducer';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToWatchLater } from '../reduxContainer/MovieReducer';
 
 
 
@@ -52,7 +52,7 @@ function MovieCard() {
             console.error("Error fetching movies:", error);
         }
     };
-
+    const watchLater = useSelector(state => state.reducer.watchLater)
     const dispatch = useDispatch()
 
 
@@ -96,11 +96,15 @@ function MovieCard() {
         []
     );
 
+    const isMovieInWatchLater = (movie) => {
+        return watchLater.find(item => item.id === movie.id);
+    };
+
     const [showAlert, setShowAlert] = useState(false);
 
     const handleAddPlaylist = (movie) => {
         setShowAlert(true);
-        dispatch(addToPlayList(movie)),
+        dispatch(addToWatchLater(movie)),
             setTimeout(() => {
                 setShowAlert(false);
             }, 2000);
@@ -147,7 +151,12 @@ function MovieCard() {
                                 </Link>
                                 <Card.Title className='text-center'>{movie.movie}</Card.Title>
                                 <div className='d-flex justify-content-center align-items-center w-100 mt-2'>
-                                    <Button onClick={() => { handleAddPlaylist(movie) }} variant="primary">Add to Playlist</Button>
+                                    {isMovieInWatchLater(movie) ? (
+                                        <p className="text-success">Added to Watch Later</p>
+                                    ) : (
+                                        <Button onClick={() => { handleAddPlaylist(movie) }} variant="primary">{ }Add to Playlist</Button>
+                                    )}
+
                                 </div>
                             </Card.Body>
                         </Card>

@@ -1,16 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addIn, fetchMovies } from '../reduxContainer/MovieReducer';
+import SweetAlert from 'react-bootstrap-sweetalert';
 import { Button, Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { removeFromWatchLater } from '../reduxContainer/MovieReducer';
 
 
 function Playlist() {
     const dispatch = useDispatch();
-    const movies = useSelector(state => state.reducer.PlaylistMovie);
+    const movies = useSelector(state => state.reducer.watchLater);
+    const [showAlert, setShowAlert] = useState(false);
 
 
     console.log(movies)
+
+    const handleRemovePlaylist = (movieId) => {
+        setShowAlert(true);
+        dispatch(removeFromWatchLater(movieId)),
+            setTimeout(() => {
+                setShowAlert(false);
+            }, 2000);
+    }
 
 
 
@@ -31,12 +41,22 @@ function Playlist() {
                                     </Link>
                                     <Card.Title className='text-center'>{movie.movie}</Card.Title>
                                     <div className='d-flex justify-content-center align-items-center w-100 mt-2'>
-                                        <Button variant="primary">Add to Playlist</Button>
+                                        <Button variant="danger" onClick={() => { handleRemovePlaylist(movie.id) }}>Remove </Button>
                                     </div>
                                 </Card.Body>
                             </Card>
                         ))
                     }
+                </div>
+
+                <div>
+                    {showAlert && (
+                        <SweetAlert
+                            success
+                            title="Playlist Removed successfully!"
+                            onConfirm={() => setShowAlert(false)}
+                        />
+                    )}
                 </div>
 
             </>

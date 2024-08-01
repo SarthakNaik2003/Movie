@@ -1,62 +1,55 @@
-import { createSlice, nanoid } from "@reduxjs/toolkit";
-import axios from "axios";
+import { createSlice } from '@reduxjs/toolkit';
+import axios from 'axios';
 
-const API_URL = 'https://dummyapi.online/api/movies/';
-
-const initialState = {
-    NumberOfMovie: 20,
-    PlaylistMovie: [
-        {
-            id: 1,
-            image: "images/shawshank.jpg",
-            imdb_url: "https://www.imdb.com/title/tt0111161/",
-            movie: "The Shawshank Redemption",
-            rating: 9.2
-        },
-    ],
-    status: 'idle',
-    error: null
+export const fetchMovies = () => {
+    return async (dispatch) => {
+        try {
+            const response = await axios.get('https://dummyapi.online/api/movies');
+            dispatch(setMovies(response.data));
+        } catch (error) {
+            console.error('Error fetching movies:', error);
+        }
+    };
 };
 
-// Thunk function to fetch movies
-export const fetchMovies = () => async (dispatch) => {
-    dispatch(fetchMoviesRequest());
-    try {
-        const response = await axios.get(API_URL);
-        dispatch(fetchMoviesSuccess(response.data));
-    } catch (error) {
-        dispatch(fetchMoviesFailure(error.message));
-    }
+export const fetchMovieDetails = (movieId) => {
+    return async (dispatch) => {
+        try {
+            const response = await axios.get(`https://dummyapi.online/api/movies/${movieId}`);
+            dispatch(setMovieDetails(response.data));
+        } catch (error) {
+            console.error('Error fetching movie details:', error);
+        }
+    };
 };
 
 const movieSlice = createSlice({
-    name: 'Movie',
-    initialState,
+    name: 'movies',
+    initialState: {
+        movies: [],
+        details: null,
+        watchLater: [],
+        status: 'idle',
+        error: null,
+    },
     reducers: {
-        addIn: (state, action) => {
-            state.NumberOfMovie += 1;
+        setMovies: (state, action) => {
+            state.movies = action.payload;
+            state.status = 'succeeded';
         },
-        fetchMoviesRequest: (state) => {
-            state.status = 'loading';
+        addToWatchLater: (state, action) => {
+            state.watchLater.push(action.payload);
         },
-        fetchMoviesFailure: (state, action) => {
-            state.status = 'failed';
-            state.error = action.payload;
+        setMovieDetails: (state, action) => {
+            state.details = action.payload;
+            state.status = 'succeeded';
+        },
+        removeFromWatchLater: (state, action) => {
+            state.watchLater = state.watchLater.filter(movie => movie.id !== action.payload);
         },
 
-        fetchMoviesSuccess: (state, action) => {
-            state.status = 'succeeded';
-            state.PlaylistMovie = action.payload;
-        },
-        addToPlayList: (state, action) => {
-            const Movie = {
-                id: state.PlaylistMovie.length + 1,
-                ...action.payload
-            }
-            state.PlaylistMovie.push(Movie)
-        },
     },
 });
 
-export const { addIn, fetchMoviesRequest, fetchMoviesSuccess, fetchMoviesFailure, addToPlayList } = movieSlice.actions;
+export const { setMovies, addToWatchLater, setMovieDetails, removeFromWatchLater } = movieSlice.actions;
 export default movieSlice.reducer;
