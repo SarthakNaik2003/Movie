@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
@@ -7,56 +6,71 @@ import SweetAlert from 'react-bootstrap-sweetalert';
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import apiService from "../service/api/movieapi";
 import NavDropdown from 'react-bootstrap/NavDropdown';
-import { debounce } from "lodash"
+import { debounce } from "lodash";
 import { useDispatch, useSelector } from 'react-redux';
 import { addToWatchLater } from '../reduxContainer/MovieReducer';
 
 function MovieCard() {
     const [movies, setMovies] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredMovies, setFilteredMovies] = useState([]);
-    const [recordsPerPage, setRecordsPerPage] = useState(10);
+    const [recordsPerPage, setRecordsPerPage] = useState(5);
     const [searchParams, setSearchParams] = useSearchParams();
-
 
     const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
     const lastIndex = currentPage * recordsPerPage;
     const firstIndex = lastIndex - recordsPerPage;
-    const records = filteredMovies.slice(firstIndex, lastIndex);
-    const nPage = Math.ceil(filteredMovies.length / recordsPerPage);
+    const records = movies.slice(firstIndex, lastIndex);
+    const nPage = Math.ceil(movies.length / recordsPerPage);
     const pageNumbers = [...Array(nPage + 1).keys()].slice(1);
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+    const fetchData = async () => {
+        try {
+            const response = await apiService.getAll();
+            setMovies(response);
+            console.log(response)
+        } catch (error) {
+            console.error("Error fetching movies:", error);
+        }
+    };
 
     useEffect(() => {
-        setFilteredMovies(movies);
-    }, [movies]);
+        // fetchData();
+        if (!searchQuery) {
+            fetchData();
+        }
+    }, [searchQuery]);
 
     useEffect(() => {
         setSearchParams({ page: currentPage });
     }, [currentPage, setSearchParams]);
 
-    const fetchData = async () => {
-        try {
-            const response = await apiService.getAll();
-            const data = response;
-            console.log(data);
-            setMovies(data);
-        } catch (error) {
-            console.error("Error fetching movies:", error);
-        }
+    const debouncedSearch = useCallback(
+        debounce((term) => {
+            if (term) {
+                setMovies((prevMovies) =>
+                    prevMovies.filter((movie) =>
+                        movie.movie.toLowerCase().includes(term.toLowerCase())
+                    )
+
+                );
+            }
+            // } else {
+            //     fetchData();
+            //     console.log(movies)
+            // }
+        }, 500),
+        []
+    );
+
+    useEffect(() => {
+        debouncedSearch(searchQuery);
+        setSearchParams({ page: 1 }); // Reset to first page after search
+    }, [searchQuery, debouncedSearch, setSearchParams]);
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
     };
-    const watchLater = useSelector(state => state.reducer.watchLater)
-    const dispatch = useDispatch()
-
-
-
-    const navigate = useNavigate();
-
-
 
     const prePage = () => {
         if (currentPage > 1) {
@@ -78,22 +92,8 @@ function MovieCard() {
         setRecordsPerPage(Number(eventKey));
     };
 
-
-    const debouncedSearch = useCallback(
-        debounce((term) => {
-            console.log('Searching for:', term);
-            setFilteredMovies(
-                movies.filter(movie =>
-                    movie.movie.toLowerCase().includes(term.toLowerCase())
-                )
-            );
-
-            // Perform the search or API call here
-
-        }, 500), // 500ms delay
-
-    );
-
+    const watchLater = useSelector(state => state.reducer.watchLater);
+    const dispatch = useDispatch();
 
     const isMovieInWatchLater = (movie) => {
         return watchLater.find(item => item.id === movie.id);
@@ -103,26 +103,10 @@ function MovieCard() {
 
     const handleAddPlaylist = (movie) => {
         setShowAlert(true);
-        dispatch(addToWatchLater(movie)),
-            setTimeout(() => {
-                setShowAlert(false);
-            }, 2000);
-    };
-
-
-
-    const handleSearchChange = (e) => {
-        setSearchQuery(e.target.value);
-        if (e.target.value === "") {
-            setFilteredMovies(movies)
-        } else {
-
-            debouncedSearch(e.target.value);
-
-
-        }
-        setSearchParams({ page: 1 }); // Reset to first page after search
-
+        dispatch(addToWatchLater(movie));
+        setTimeout(() => {
+            setShowAlert(false);
+        }, 2000);
     };
 
     return (
@@ -134,11 +118,10 @@ function MovieCard() {
                 onChange={handleSearchChange}
                 name='searchQuery'
             />
-            {/* <button onClick={handleSearchClick}>Search</button> */}
             <NavDropdown onSelect={handleSelect} title={`No of Page: ${recordsPerPage}`} id="navbarScrollingDropdown">
-                <NavDropdown.Item eventKey='5' >5</NavDropdown.Item>
-                <NavDropdown.Item eventKey='10' >10</NavDropdown.Item>
-                <NavDropdown.Item eventKey='20' >20</NavDropdown.Item>
+                <NavDropdown.Item eventKey='5'>5</NavDropdown.Item>
+                <NavDropdown.Item eventKey='10'>10</NavDropdown.Item>
+                <NavDropdown.Item eventKey='20'>20</NavDropdown.Item>
             </NavDropdown>
             <div className='card-body'>
                 {
@@ -153,16 +136,15 @@ function MovieCard() {
                                     {isMovieInWatchLater(movie) ? (
                                         <p className="text-success">Added to Watch Later</p>
                                     ) : (
-                                        <Button onClick={() => { handleAddPlaylist(movie) }} variant="primary">{ }Add to Playlist</Button>
+                                        <Button onClick={() => handleAddPlaylist(movie)} variant="primary">Add to Playlist</Button>
                                     )}
-
                                 </div>
                             </Card.Body>
                         </Card>
                     ))
                 }
             </div>
-            <nav className='pagi-body row justify-content-center align-items-center '>
+            <nav className='pagi-body row justify-content-center align-items-center'>
                 <ul className='pagination'>
                     <li className='page-item'>
                         <Link className='page-link' to={`?page=${currentPage - 1}`} onClick={(e) => { e.preventDefault(); prePage(); }}>Prev</Link>
@@ -179,8 +161,6 @@ function MovieCard() {
                     </li>
                 </ul>
             </nav>
-
-            {/* sweet alert for add to playlist  */}
             <div>
                 {showAlert && (
                     <SweetAlert
