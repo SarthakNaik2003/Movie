@@ -11,9 +11,6 @@ import { debounce } from "lodash"
 import { useDispatch, useSelector } from 'react-redux';
 import { addToWatchLater } from '../reduxContainer/MovieReducer';
 
-
-
-
 function MovieCard() {
     const [movies, setMovies] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -90,11 +87,13 @@ function MovieCard() {
                     movie.movie.toLowerCase().includes(term.toLowerCase())
                 )
             );
+
             // Perform the search or API call here
 
-        }, 500), // 300ms delay
-        []
+        }, 500), // 500ms delay
+
     );
+
 
     const isMovieInWatchLater = (movie) => {
         return watchLater.find(item => item.id === movie.id);

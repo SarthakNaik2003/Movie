@@ -4,7 +4,7 @@ import SweetAlert from 'react-bootstrap-sweetalert';
 import { Button, Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { removeFromWatchLater } from '../reduxContainer/MovieReducer';
-
+import '../App.css';
 
 function Playlist() {
     const dispatch = useDispatch();
