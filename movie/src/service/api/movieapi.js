@@ -1,8 +1,8 @@
 import axios from "axios"
-const baseUrl = "https://dummyapi.online/api/movies/"
+const baseUrl = "http://localhost:3000/movies/"
 
 const getAll = () => {
-    const request = axios.get(baseUrl)
+    const request = axios.get(`${baseUrl}/movies`)
     return request.then(response => (response.data))
 }
 const getMovieById = (id) => {

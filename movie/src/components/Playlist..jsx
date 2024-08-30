@@ -26,11 +26,8 @@ function Playlist() {
 
     return (
         <>
-
-            <div>Playlist.</div>
-
-            <>
-
+            <div className="container">
+                <h1 className='row justify-content-center align-items-center '>Playlist</h1>
                 <div className='card-body'>
                     {
                         movies.map((movie, index) => (
@@ -58,8 +55,7 @@ function Playlist() {
                         />
                     )}
                 </div>
-
-            </>
+            </div>
         </>
     );
 }

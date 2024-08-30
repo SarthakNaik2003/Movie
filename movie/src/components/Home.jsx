@@ -9,7 +9,7 @@ function Home() {
         <>
 
             <div className="container">
-                <h1>{name}</h1>
+                {/* <h1>{name}</h1> */}
                 <h1 className='row justify-content-center align-items-center '>home body</h1>
                 <MovieCard />
 
