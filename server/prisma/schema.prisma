@@ -43,3 +43,11 @@ model Movies {
   image    String
   imdb_url String
 }
+
+model Playlist {
+  id       Int    @id @unique
+  movie    String
+  rating   Int
+  image    String
+  imdb_url String
+}

@@ -5,6 +5,7 @@ import cors from "cors"
 import { PrismaClient } from "@prisma/client"
 import { movies } from "./src/movie.js"
 import { router } from "./src/example.js"
+import { playlist_route } from "./src/Route/playlistRoute.js"
 
 const prisma = new PrismaClient()
 
@@ -14,6 +15,7 @@ app.use(cors())
 app.use(express.json())
 app.use('/eg', router)
 app.use('/movies', movies)
+app.use("/playlist", playlist_route)
 
 
 

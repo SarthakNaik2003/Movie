@@ -7,6 +7,8 @@ movies.use(express.json())
 
 const prisma = new PrismaClient()
 
+
+
 movies.use(
     cors({
         origin: "*", // allow to server to accept request from different origin
@@ -15,10 +17,12 @@ movies.use(
     })
 );
 
-movies.get("/movies", async (req, res) => {
+movies.get("/", async (req, res) => {
     const allMovies = await prisma.movies.findMany()
     res.json(allMovies)
 })
+
+// import data of movie from json formate 
 movies.post("/insertMovie", async (req, res) => {
     const newMovie = await prisma.movies.createMany({
         data: req.body
