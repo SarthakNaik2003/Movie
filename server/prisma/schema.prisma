@@ -45,9 +45,28 @@ model Movies {
 }
 
 model Playlist {
-  id       Int    @id @unique
+  id       Int     @id @unique
   movie    String
   rating   Int
   image    String
   imdb_url String
+  added    Boolean
+}
+
+enum Gender {
+  male
+  female
+  others
+}
+
+model UserM {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  password  String
+  gender    Gender
+  token     String? 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -13,7 +13,7 @@ function Movie() {
     if (!movieData) {
         return <div>Loading...</div>;
     }
-    
+
     return (
         <div>
             {

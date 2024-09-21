@@ -7,12 +7,16 @@ import { NavLink } from 'react-router-dom';
 
 const NavbarMain = () => {
 
-
+    const handleLogout = () => {
+        // Implement your logout logic here (e.g., clearing tokens, redirecting)
+        console.log("Logging out...");
+    };
 
     return (
         <Navbar expand="lg" className="bg-warning">
             <Container fluid>
-                <Navbar.Brand href="#">Movies App</Navbar.Brand>
+                <NavLink className="nav-link " to="/" >Movies App</NavLink>
+
                 <Navbar.Toggle aria-controls="navbarScroll" />
                 <Navbar.Collapse id="navbarScroll">
                     <Nav
@@ -25,6 +29,10 @@ const NavbarMain = () => {
 
 
                     </Nav>
+                    {/* Logout Button */}
+                    <Button variant="danger" onClick={handleLogout}>
+                        Logout
+                    </Button>
                 </Navbar.Collapse>
             </Container>
         </Navbar>

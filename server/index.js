@@ -3,9 +3,13 @@ dotenv.config({})
 import express from "express"
 import cors from "cors"
 import { PrismaClient } from "@prisma/client"
-import { movies } from "./src/movie.js"
+
 import { router } from "./src/example.js"
 import { playlist_route } from "./src/Route/playlistRoute.js"
+import { auth_route } from "./src/Route/authLogin.js"
+import { movie_route } from "./src/Route/movie.js"
+
+
 
 const prisma = new PrismaClient()
 
@@ -14,8 +18,10 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 app.use('/eg', router)
-app.use('/movies', movies)
+app.use('/movies', movie_route)
 app.use("/playlist", playlist_route)
+app.use("/auth", auth_route)
+
 
 
 
